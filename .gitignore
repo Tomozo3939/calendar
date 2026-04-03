@@ -4,3 +4,5 @@ node_modules/
 .env*.local
 *.iam.gserviceaccount.com*
 spatial-dryad-*.json
+
+.vercel

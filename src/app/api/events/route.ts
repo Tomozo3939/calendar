@@ -141,9 +141,10 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({ days, unresolvedCount });
   } catch (error) {
-    console.error("Failed to fetch events:", error);
+    const msg = error instanceof Error ? error.message : String(error);
+    console.error("Failed to fetch events:", msg, error);
     return NextResponse.json(
-      { error: "Failed to fetch calendar events" },
+      { error: "Failed to fetch calendar events", detail: msg },
       { status: 500 }
     );
   }
