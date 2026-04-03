@@ -54,11 +54,11 @@ export function DayCard({ schedule, onPickupTap }: DayCardProps) {
         <div className="flex gap-0.5">
           {schedule.isWfh && (
             <span className="text-[10px] bg-green-100 text-green-700 px-1 rounded">
-              在宅
+              パパ在宅
             </span>
           )}
           {schedule.trash.map((t) => (
-            <span key={t} className="text-xs" title={t}>
+            <span key={t} className="text-[10px]" aria-label={t}>
               {getTrashEmoji(t)}
             </span>
           ))}

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import type { DaySchedule, PickupEvent, Person } from "@/types/calendar";
-import { parseDate, isToday, isWeekend, getWeekdayShort } from "@/lib/date-utils";
+import { parseDate, isToday, isWeekend } from "@/lib/date-utils";
 import { getTrashEmoji } from "@/lib/trash-schedule";
 import { AssignModal } from "./assign-modal";
 
@@ -24,7 +24,7 @@ export function MonthView({ days, currentMonth, onAssign }: MonthViewProps) {
         {WEEKDAY_HEADERS.map((d, i) => (
           <div
             key={d}
-            className={`text-center text-[10px] font-medium py-1 ${
+            className={`text-center text-[11px] font-medium py-1 ${
               i >= 5 ? "text-red-300" : "text-gray-400"
             }`}
           >
@@ -45,57 +45,50 @@ export function MonthView({ days, currentMonth, onAssign }: MonthViewProps) {
             <div
               key={day.date}
               className={`
-                min-h-[72px] p-1 rounded-lg text-center
-                ${!inMonth ? "opacity-30" : ""}
+                min-h-[80px] p-1 rounded-lg
+                ${!inMonth ? "opacity-25" : ""}
                 ${today ? "bg-blue-50 ring-1 ring-blue-300" : ""}
-                ${hasUnresolved && inMonth ? "bg-yellow-50" : ""}
+                ${hasUnresolved && inMonth && !today ? "bg-amber-50/50" : ""}
               `}
             >
-              <span
-                className={`
-                  text-xs font-medium
-                  ${today ? "text-blue-600" : isWeekend(date) ? "text-red-400" : "text-gray-600"}
-                `}
-              >
-                {date.getDate()}
-              </span>
+              <div className="text-center">
+                <span
+                  className={`
+                    text-xs font-medium
+                    ${today ? "text-blue-600" : isWeekend(date) ? "text-red-400" : "text-gray-600"}
+                  `}
+                >
+                  {date.getDate()}
+                </span>
+              </div>
 
-              {/* コンパクト表示 */}
-              <div className="mt-0.5 space-y-px">
+              <div className="mt-0.5 space-y-0.5">
                 {day.pickups.map((p, i) => (
                   <button
                     key={`${p.type}-${i}`}
                     onClick={() => setSelectedPickup(p)}
+                    aria-label={`${day.date} ${p.type} ${p.assignee ?? "未定"}`}
                     className={`
-                      w-full text-[8px] leading-tight rounded px-0.5 py-px truncate
+                      w-full text-[10px] leading-snug rounded px-0.5 py-0.5 min-h-[20px]
+                      focus-visible:ring-1 focus-visible:ring-blue-400 focus-visible:outline-none
                       ${p.assignee === "パパ"
-                        ? "bg-blue-100 text-blue-600"
+                        ? "bg-blue-100 text-blue-700"
                         : p.assignee === "ママ"
-                          ? "bg-pink-100 text-pink-600"
-                          : "bg-yellow-100 text-yellow-600"
+                          ? "bg-pink-100 text-pink-700"
+                          : "bg-amber-50 text-amber-600"
                       }
                     `}
                   >
-                    {p.type[0]}{p.assignee?.[0] ?? "？"}
+                    {p.type === "送り" ? "☀" : "🌙"}{p.assignee?.[0] ?? "—"}
                   </button>
                 ))}
                 {day.isWfh && (
-                  <div className="text-[8px] bg-green-100 text-green-600 rounded px-0.5">
+                  <div className="text-[9px] bg-green-100 text-green-700 rounded px-0.5 text-center">
                     在宅
                   </div>
                 )}
-                {day.kawamuraEvents.filter((e) => !e.isWfh).length > 0 && (
-                  <div className="text-[8px] bg-blue-50 text-blue-500 rounded px-0.5 truncate">
-                    {day.kawamuraEvents.filter((e) => !e.isWfh).length}件
-                  </div>
-                )}
-                {day.moekaEvents.length > 0 && (
-                  <div className="text-[8px] bg-pink-50 text-pink-500 rounded px-0.5 truncate">
-                    {day.moekaEvents.length}件
-                  </div>
-                )}
                 {day.trash.map((t) => (
-                  <span key={t} className="text-[9px]">{getTrashEmoji(t)}</span>
+                  <span key={t} className="text-[10px]" aria-label={t}>{getTrashEmoji(t)}</span>
                 ))}
               </div>
             </div>

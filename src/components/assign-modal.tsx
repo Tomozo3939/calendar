@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import type { Person, PickupEvent } from "@/types/calendar";
 import { getWeekdayShort, parseDate } from "@/lib/date-utils";
 
@@ -11,6 +12,14 @@ interface AssignModalProps {
 }
 
 export function AssignModal({ pickup, onAssign, onUnassign, onClose }: AssignModalProps) {
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", handleKey);
+    return () => document.removeEventListener("keydown", handleKey);
+  }, [onClose]);
+
   const date = parseDate(pickup.date);
   const month = date.getMonth() + 1;
   const day = date.getDate();
