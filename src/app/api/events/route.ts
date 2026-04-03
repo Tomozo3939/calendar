@@ -26,13 +26,23 @@ export async function GET(req: NextRequest) {
   const timeMax = `${end}T23:59:59+09:00`;
 
   try {
-    // 全カレンダーから並列取得
+    // 全カレンダーから並列取得（個別にエラーハンドリング）
+    const safeFetch = async (calId: string) => {
+      if (!calId) return [];
+      try {
+        return await listEvents(calId, timeMin, timeMax);
+      } catch (e) {
+        console.warn(`Calendar fetch failed for ${calId}:`, e instanceof Error ? e.message : e);
+        return [];
+      }
+    };
+
     const [pickupEvents, familyEvents, kawamuraEvents, moekaEvents] =
       await Promise.all([
-        ids.pickup ? listEvents(ids.pickup, timeMin, timeMax) : [],
-        ids.family ? listEvents(ids.family, timeMin, timeMax) : [],
-        ids.kawamura ? listEvents(ids.kawamura, timeMin, timeMax) : [],
-        ids.moeka ? listEvents(ids.moeka, timeMin, timeMax) : [],
+        safeFetch(ids.pickup),
+        safeFetch(ids.family),
+        safeFetch(ids.kawamura),
+        safeFetch(ids.moeka),
       ]);
 
     // 日付ごとにまとめる
