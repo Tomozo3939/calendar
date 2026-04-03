@@ -3,7 +3,7 @@
 :root {
   --color-papa: #3b82f6;
   --color-mama: #ec4899;
-  --color-unset: #eab308;
+  --color-unset: #d97706;
   --color-wfh: #22c55e;
   --color-trash: #9ca3af;
   --color-family: #ef4444;
@@ -13,9 +13,18 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  touch-action: manipulation;
 }
 
-/* タッチデバイスのタップハイライト無効化 */
-* {
-  -webkit-tap-highlight-color: transparent;
+/* タッチデバイスのタップハイライト制御 */
+button, a {
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0.05);
+}
+
+/* reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }

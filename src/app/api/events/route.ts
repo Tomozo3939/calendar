@@ -128,7 +128,7 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    // 指定期間の全日分を埋める（ゴミの日表示のため）
+    // 指定期間の全日分を埋める
     const startDate = new Date(start + "T00:00:00");
     const endDate = new Date(end + "T00:00:00");
     for (
@@ -136,7 +136,29 @@ export async function GET(req: NextRequest) {
       d <= endDate;
       d.setDate(d.getDate() + 1)
     ) {
-      getOrCreate(formatDate(d));
+      const dateStr = formatDate(d);
+      const day = getOrCreate(dateStr);
+
+      // 平日（月〜金）で送迎スロットがなければデフォルト生成
+      const dow = d.getDay(); // 0=日, 6=土
+      if (dow >= 1 && dow <= 5) {
+        const hasOkuri = day.pickups.some((p) => p.type === "送り");
+        const hasMukae = day.pickups.some((p) => p.type === "迎え");
+        if (!hasOkuri) {
+          day.pickups.unshift({
+            date: dateStr,
+            type: "送り",
+            assignee: null,
+          });
+        }
+        if (!hasMukae) {
+          day.pickups.push({
+            date: dateStr,
+            type: "迎え",
+            assignee: null,
+          });
+        }
+      }
     }
 
     // ソートして配列化
@@ -144,6 +166,7 @@ export async function GET(req: NextRequest) {
       a.date.localeCompare(b.date)
     );
 
+    // 未調整 = 平日で送り or 迎えの担当が未定
     const unresolvedCount = days.reduce((count, day) => {
       const hasUnresolved = day.pickups.some((p) => p.assignee === null);
       return count + (hasUnresolved ? 1 : 0);
