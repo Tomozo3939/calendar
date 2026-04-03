@@ -1,6 +1,6 @@
 "use client";
 
-import type { DaySchedule, Person, PickupEvent } from "@/types/calendar";
+import type { DaySchedule, PickupEvent } from "@/types/calendar";
 import { getWeekdayShort, isToday, parseDate, isWeekend } from "@/lib/date-utils";
 import { getTrashEmoji } from "@/lib/trash-schedule";
 import { PickupBadge } from "./pickup-badge";
@@ -8,10 +8,9 @@ import { PickupBadge } from "./pickup-badge";
 interface DayCardProps {
   schedule: DaySchedule;
   onPickupTap: (pickup: PickupEvent) => void;
-  compact?: boolean;
 }
 
-export function DayCard({ schedule, onPickupTap, compact }: DayCardProps) {
+export function DayCard({ schedule, onPickupTap }: DayCardProps) {
   const date = parseDate(schedule.date);
   const today = isToday(date);
   const weekend = isWeekend(date);
@@ -77,6 +76,42 @@ export function DayCard({ schedule, onPickupTap, compact }: DayCardProps) {
           />
         ))}
       </div>
+
+      {/* 川村の予定 */}
+      {schedule.kawamuraEvents.filter((e) => !e.isWfh).length > 0 && (
+        <div className="mt-1 space-y-0.5">
+          {schedule.kawamuraEvents
+            .filter((e) => !e.isWfh)
+            .map((ev) => (
+              <div
+                key={ev.id}
+                className="text-[10px] text-blue-600 bg-blue-50 px-1 py-0.5 rounded truncate"
+              >
+                {ev.startTime && (
+                  <span className="font-mono mr-0.5">{ev.startTime}</span>
+                )}
+                {ev.title}
+              </div>
+            ))}
+        </div>
+      )}
+
+      {/* 萌香の予定 */}
+      {schedule.moekaEvents.length > 0 && (
+        <div className="mt-1 space-y-0.5">
+          {schedule.moekaEvents.map((ev) => (
+            <div
+              key={ev.id}
+              className="text-[10px] text-pink-600 bg-pink-50 px-1 py-0.5 rounded truncate"
+            >
+              {ev.startTime && (
+                <span className="font-mono mr-0.5">{ev.startTime}</span>
+              )}
+              {ev.title}
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* 家族予定 */}
       {schedule.familyEvents.length > 0 && (

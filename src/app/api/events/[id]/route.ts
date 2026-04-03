@@ -1,7 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
-import { updateEvent, deleteEvent, pickupSummary } from "@/lib/google-calendar";
-import { getCalendarIds, COLOR_IDS } from "@/lib/calendar-config";
+import {
+  updateEvent,
+  deleteEvent,
+  pickupSummary,
+} from "@/lib/google-calendar";
+import { getCalendarIds, COLOR_IDS, CalendarKey } from "@/lib/calendar-config";
 import type { Person } from "@/types/calendar";
+
+function resolveCalendarId(calendar: string): string {
+  const ids = getCalendarIds();
+  return ids[calendar as CalendarKey] || ids.pickup;
+}
 
 /**
  * PATCH /api/events/[id]
@@ -16,22 +25,20 @@ export async function PATCH(
   const { assignee, type, calendar } = body as {
     assignee?: Person | null;
     type?: "送り" | "迎え";
-    calendar?: "pickup" | "wfh" | "family";
+    calendar?: string;
   };
 
-  const ids = getCalendarIds();
-  const calendarId = calendar === "wfh" ? ids.wfh
-    : calendar === "family" ? ids.family
-    : ids.pickup;
+  const calendarId = resolveCalendarId(calendar || "pickup");
 
   try {
     if (type && calendar === "pickup") {
       const summary = pickupSummary(type, assignee ?? null);
-      const colorId = assignee === "パパ"
-        ? COLOR_IDS.papa
-        : assignee === "ママ"
-          ? COLOR_IDS.mama
-          : COLOR_IDS.unset;
+      const colorId =
+        assignee === "パパ"
+          ? COLOR_IDS.papa
+          : assignee === "ママ"
+            ? COLOR_IDS.mama
+            : COLOR_IDS.unset;
       const event = await updateEvent(calendarId, id, { summary, colorId });
       return NextResponse.json(event);
     }
@@ -55,10 +62,7 @@ export async function DELETE(
 ) {
   const { id } = await params;
   const calendar = req.nextUrl.searchParams.get("calendar") || "pickup";
-  const ids = getCalendarIds();
-  const calendarId = calendar === "wfh" ? ids.wfh
-    : calendar === "family" ? ids.family
-    : ids.pickup;
+  const calendarId = resolveCalendarId(calendar);
 
   try {
     await deleteEvent(calendarId, id);

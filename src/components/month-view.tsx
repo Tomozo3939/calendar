@@ -84,6 +84,16 @@ export function MonthView({ days, currentMonth, onAssign }: MonthViewProps) {
                     在宅
                   </div>
                 )}
+                {day.kawamuraEvents.filter((e) => !e.isWfh).length > 0 && (
+                  <div className="text-[8px] bg-blue-50 text-blue-500 rounded px-0.5 truncate">
+                    {day.kawamuraEvents.filter((e) => !e.isWfh).length}件
+                  </div>
+                )}
+                {day.moekaEvents.length > 0 && (
+                  <div className="text-[8px] bg-pink-50 text-pink-500 rounded px-0.5 truncate">
+                    {day.moekaEvents.length}件
+                  </div>
+                )}
                 {day.trash.map((t) => (
                   <span key={t} className="text-[9px]">{getTrashEmoji(t)}</span>
                 ))}

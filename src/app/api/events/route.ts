@@ -27,11 +27,13 @@ export async function GET(req: NextRequest) {
 
   try {
     // 全カレンダーから並列取得
-    const [pickupEvents, wfhEvents, familyEvents] = await Promise.all([
-      ids.pickup ? listEvents(ids.pickup, timeMin, timeMax) : [],
-      ids.wfh ? listEvents(ids.wfh, timeMin, timeMax) : [],
-      ids.family ? listEvents(ids.family, timeMin, timeMax) : [],
-    ]);
+    const [pickupEvents, familyEvents, kawamuraEvents, moekaEvents] =
+      await Promise.all([
+        ids.pickup ? listEvents(ids.pickup, timeMin, timeMax) : [],
+        ids.family ? listEvents(ids.family, timeMin, timeMax) : [],
+        ids.kawamura ? listEvents(ids.kawamura, timeMin, timeMax) : [],
+        ids.moeka ? listEvents(ids.moeka, timeMin, timeMax) : [],
+      ]);
 
     // 日付ごとにまとめる
     const scheduleMap = new Map<string, DaySchedule>();
@@ -45,6 +47,8 @@ export async function GET(req: NextRequest) {
           isWfh: false,
           trash: getTrashTypes(date),
           familyEvents: [],
+          kawamuraEvents: [],
+          moekaEvents: [],
           isHoliday: false,
         });
       }
@@ -66,14 +70,6 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    // 在宅イベント
-    for (const ev of wfhEvents) {
-      const dateStr = ev.start?.date || ev.start?.dateTime?.slice(0, 10);
-      if (!dateStr) continue;
-      const day = getOrCreate(dateStr);
-      day.isWfh = true;
-    }
-
     // 家族イベント
     for (const ev of familyEvents) {
       const dateStr = ev.start?.date || ev.start?.dateTime?.slice(0, 10);
@@ -88,10 +84,48 @@ export async function GET(req: NextRequest) {
       });
     }
 
+    // 川村イベント（在宅勤務の検出含む）
+    for (const ev of kawamuraEvents) {
+      const dateStr = ev.start?.date || ev.start?.dateTime?.slice(0, 10);
+      if (!dateStr) continue;
+      const day = getOrCreate(dateStr);
+      const title = ev.summary || "";
+      const isWfh = /在宅|WFH|テレワーク|リモート/i.test(title);
+      if (isWfh) {
+        day.isWfh = true;
+      }
+      day.kawamuraEvents.push({
+        id: ev.id || "",
+        title,
+        startTime: ev.start?.dateTime?.slice(11, 16),
+        endTime: ev.end?.dateTime?.slice(11, 16),
+        googleEventId: ev.id || undefined,
+        isWfh,
+      });
+    }
+
+    // 萌香イベント
+    for (const ev of moekaEvents) {
+      const dateStr = ev.start?.date || ev.start?.dateTime?.slice(0, 10);
+      if (!dateStr) continue;
+      const day = getOrCreate(dateStr);
+      day.moekaEvents.push({
+        id: ev.id || "",
+        title: ev.summary || "",
+        startTime: ev.start?.dateTime?.slice(11, 16),
+        endTime: ev.end?.dateTime?.slice(11, 16),
+        googleEventId: ev.id || undefined,
+      });
+    }
+
     // 指定期間の全日分を埋める（ゴミの日表示のため）
     const startDate = new Date(start + "T00:00:00");
     const endDate = new Date(end + "T00:00:00");
-    for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+    for (
+      let d = new Date(startDate);
+      d <= endDate;
+      d.setDate(d.getDate() + 1)
+    ) {
       getOrCreate(formatDate(d));
     }
 
@@ -125,7 +159,7 @@ export async function POST(req: NextRequest) {
     type?: PickupType;
     date: string;
     assignee?: Person | null;
-    category: "pickup" | "wfh" | "family";
+    category: "pickup" | "family" | "kawamura" | "moeka";
     title?: string;
   };
 
@@ -134,24 +168,16 @@ export async function POST(req: NextRequest) {
   try {
     if (category === "pickup" && type) {
       const summary = pickupSummary(type, assignee ?? null);
-      const colorId = assignee === "パパ"
-        ? COLOR_IDS.papa
-        : assignee === "ママ"
-          ? COLOR_IDS.mama
-          : COLOR_IDS.unset;
+      const colorId =
+        assignee === "パパ"
+          ? COLOR_IDS.papa
+          : assignee === "ママ"
+            ? COLOR_IDS.mama
+            : COLOR_IDS.unset;
       const event = await createEvent(ids.pickup, {
         summary,
         date,
         colorId,
-      });
-      return NextResponse.json(event);
-    }
-
-    if (category === "wfh") {
-      const event = await createEvent(ids.wfh, {
-        summary: "在宅勤務",
-        date,
-        colorId: COLOR_IDS.wfh,
       });
       return NextResponse.json(event);
     }
@@ -161,6 +187,24 @@ export async function POST(req: NextRequest) {
         summary: body.title || "予定",
         date,
         colorId: COLOR_IDS.family,
+      });
+      return NextResponse.json(event);
+    }
+
+    if (category === "kawamura") {
+      const event = await createEvent(ids.kawamura, {
+        summary: body.title || "予定",
+        date,
+        colorId: COLOR_IDS.kawamura,
+      });
+      return NextResponse.json(event);
+    }
+
+    if (category === "moeka") {
+      const event = await createEvent(ids.moeka, {
+        summary: body.title || "予定",
+        date,
+        colorId: COLOR_IDS.moeka,
       });
       return NextResponse.json(event);
     }

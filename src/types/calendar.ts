@@ -2,9 +2,10 @@ export type Person = "パパ" | "ママ";
 
 export type EventCategory =
   | "送迎"
-  | "在宅"
   | "ゴミ"
   | "家族"
+  | "川村"
+  | "萌香"
   | "その他";
 
 export type PickupType = "送り" | "迎え";
@@ -16,12 +17,23 @@ export interface PickupEvent {
   googleEventId?: string;
 }
 
+export interface PersonalEvent {
+  id: string;
+  title: string;
+  startTime?: string; // HH:MM
+  endTime?: string;
+  googleEventId?: string;
+  isWfh?: boolean; // 在宅勤務（川村カレンダーのみ）
+}
+
 export interface DaySchedule {
   date: string; // YYYY-MM-DD
   pickups: PickupEvent[];
   isWfh: boolean; // 在宅勤務
   trash: TrashType[];
   familyEvents: FamilyEvent[];
+  kawamuraEvents: PersonalEvent[];
+  moekaEvents: PersonalEvent[];
   isHoliday: boolean;
 }
 
@@ -38,12 +50,4 @@ export interface FamilyEvent {
 export interface WeekSummary {
   days: DaySchedule[];
   unresolvedCount: number;
-}
-
-// Google Calendar のカレンダーID管理
-export interface CalendarIds {
-  pickup: string;   // 送迎
-  wfh: string;      // 在宅
-  trash: string;    // ゴミ
-  family: string;   // 家族
 }
