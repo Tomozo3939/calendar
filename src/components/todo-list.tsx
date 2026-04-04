@@ -32,18 +32,21 @@ export function TodoList() {
     setTodos(data || []);
   }
 
+  const [submitting, setSubmitting] = useState(false);
+
   async function addTodo() {
-    if (!title.trim()) return;
-    await supabase.from("todos").insert({
-      title: title.trim(),
-      date: date || null,
-      url: url.trim() || null,
-    });
+    if (!title.trim() || submitting) return;
+    setSubmitting(true);
+    const newTitle = title.trim();
+    const newDate = date || null;
+    const newUrl = url.trim() || null;
     setTitle("");
     setDate("");
     setUrl("");
     setAdding(false);
-    fetchTodos();
+    await supabase.from("todos").insert({ title: newTitle, date: newDate, url: newUrl });
+    await fetchTodos();
+    setSubmitting(false);
   }
 
   async function toggleTodo(id: string, done: boolean) {

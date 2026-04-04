@@ -9,13 +9,14 @@ import { supabase } from "@/lib/supabase";
 interface DayDetailProps {
   schedule: DaySchedule;
   onAssign: (pickup: PickupEvent, assignee: Person | null) => void;
+  onToggleWfh: (dateStr: string, currentlyWfh: boolean, wfhEventId?: string) => void;
   onClose: () => void;
   onEventAdded: () => void;
 }
 
 type AddMode = null | "event" | "todo";
 
-export function DayDetail({ schedule, onAssign, onClose, onEventAdded }: DayDetailProps) {
+export function DayDetail({ schedule, onAssign, onToggleWfh, onClose, onEventAdded }: DayDetailProps) {
   const [addMode, setAddMode] = useState<AddMode>(null);
   const [newTitle, setNewTitle] = useState("");
   const [newCategory, setNewCategory] = useState<"家族" | "川村" | "萌香">("家族");
@@ -56,28 +57,9 @@ export function DayDetail({ schedule, onAssign, onClose, onEventAdded }: DayDeta
     onEventAdded();
   };
 
-  const [wfhLoading, setWfhLoading] = useState(false);
-
-  const handleToggleWfh = async () => {
-    if (wfhLoading) return;
-    setWfhLoading(true);
-    try {
-      if (schedule.isWfh) {
-        const wfhEvent = schedule.kawamuraEvents.find((e) => e.isWfh);
-        if (wfhEvent) {
-          await supabase.from("events").delete().eq("id", wfhEvent.id);
-        }
-      } else {
-        await supabase.from("events").insert({
-          date: schedule.date,
-          title: "在宅勤務",
-          category: "川村",
-        });
-      }
-      onEventAdded();
-    } finally {
-      setWfhLoading(false);
-    }
+  const handleToggleWfh = () => {
+    const wfhEvent = schedule.kawamuraEvents.find((e) => e.isWfh);
+    onToggleWfh(schedule.date, schedule.isWfh, wfhEvent?.id);
   };
 
   function resetForm() {
@@ -140,14 +122,13 @@ export function DayDetail({ schedule, onAssign, onClose, onEventAdded }: DayDeta
           {/* 在宅ワンタップ */}
           <button
             onClick={handleToggleWfh}
-            disabled={wfhLoading}
-            className={`w-full py-2.5 rounded-xl text-sm font-medium transition-colors disabled:opacity-50 ${
+            className={`w-full py-2.5 rounded-xl text-sm font-medium transition-colors active:scale-[0.97] ${
               schedule.isWfh
                 ? "bg-green-500 text-white"
                 : "bg-[var(--color-surface)] text-[var(--color-text-sub)] border border-[var(--color-border)]"
             }`}
           >
-            {wfhLoading ? "..." : schedule.isWfh ? "在宅勤務 (ON)" : "在宅勤務にする"}
+            {schedule.isWfh ? "在宅勤務 (ON)" : "在宅勤務にする"}
           </button>
 
           {/* 送迎: 送り(上) → 迎え(下) */}

@@ -23,8 +23,16 @@ export function getWeekdayShort(date: Date): string {
 export function getMonday(date: Date): Date {
   const d = new Date(date);
   const day = d.getDay();
-  const diff = day === 0 ? -6 : 1 - day; // 日曜は前の月曜
+  const diff = day === 0 ? -6 : 1 - day;
   d.setDate(d.getDate() + diff);
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
+/** 今日を含む週の日曜日を返す（日曜始まり） */
+export function getSunday(date: Date): Date {
+  const d = new Date(date);
+  d.setDate(d.getDate() - d.getDay());
   d.setHours(0, 0, 0, 0);
   return d;
 }

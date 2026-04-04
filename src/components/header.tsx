@@ -1,6 +1,6 @@
 "use client";
 
-import { getMonday } from "@/lib/date-utils";
+import { getSunday } from "@/lib/date-utils";
 
 interface HeaderProps {
   baseDate: Date;
@@ -16,10 +16,10 @@ export function Header({ baseDate, view, onPrev, onNext, onToday }: HeaderProps)
 
   let subtitle = "";
   if (view === "week") {
-    const monday = getMonday(baseDate);
-    const sunday = new Date(monday);
-    sunday.setDate(sunday.getDate() + 6);
-    subtitle = `${monday.getMonth() + 1}/${monday.getDate()} - ${sunday.getMonth() + 1}/${sunday.getDate()}`;
+    const sun = getSunday(baseDate);
+    const sat = new Date(sun);
+    sat.setDate(sat.getDate() + 6);
+    subtitle = `${sun.getMonth() + 1}/${sun.getDate()} - ${sat.getMonth() + 1}/${sat.getDate()}`;
   }
 
   return (

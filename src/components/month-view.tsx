@@ -11,7 +11,7 @@ interface MonthViewProps {
   onDayTap: (day: DaySchedule) => void;
 }
 
-const WEEKDAY_HEADERS = ["月", "火", "水", "木", "金", "土", "日"];
+const WEEKDAY_HEADERS = ["日", "月", "火", "水", "木", "金", "土"];
 
 export function MonthView({ days, currentMonth, onDayTap }: MonthViewProps) {
   return (
@@ -21,7 +21,7 @@ export function MonthView({ days, currentMonth, onDayTap }: MonthViewProps) {
           <div
             key={d}
             className={`text-center text-xs font-medium py-1 ${
-              i >= 5 ? "text-red-400 dark:text-red-500" : "text-[var(--color-text-sub)]"
+              i === 0 || i === 6 ? "text-red-400 dark:text-red-500" : "text-[var(--color-text-sub)]"
             }`}
           >
             {d}
@@ -95,6 +95,15 @@ export function MonthView({ days, currentMonth, onDayTap }: MonthViewProps) {
 
                 {day.isWfh && (
                   <div className="text-[8px] bg-green-200 text-green-800 dark:bg-green-900 dark:text-green-300 rounded-sm px-0.5 text-center">在宅</div>
+                )}
+
+                {/* 予定ドット */}
+                {(day.familyEvents.length > 0 || day.kawamuraEvents.filter(e => !e.isWfh).length > 0 || day.moekaEvents.length > 0) && (
+                  <div className="flex gap-0.5 justify-center mt-0.5">
+                    {day.familyEvents.length > 0 && <span className="w-1 h-1 rounded-full bg-red-400" />}
+                    {day.kawamuraEvents.filter(e => !e.isWfh).length > 0 && <span className="w-1 h-1 rounded-full bg-blue-400" />}
+                    {day.moekaEvents.length > 0 && <span className="w-1 h-1 rounded-full bg-pink-400" />}
+                  </div>
                 )}
               </div>
             </button>
