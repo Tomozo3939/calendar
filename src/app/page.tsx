@@ -20,7 +20,7 @@ export default function Home() {
   const [tab, setTab] = useState<Tab>("calendar");
   const [selectedDay, setSelectedDay] = useState<DaySchedule | null>(null);
   const view = tab === "week" ? "week" : "month";
-  const { data, error, silentRefetch, optimisticAssign, optimisticToggleWfh } = useSchedule(baseDate, view);
+  const { data, error, syncDb, optimisticAssign, optimisticToggleWfh } = useSchedule(baseDate, view);
 
   const navigate = useCallback(
     (direction: -1 | 1) => {
@@ -77,14 +77,14 @@ export default function Home() {
       } else if (!currentlyWfh) {
         await supabase.from("events").insert({ date: dateStr, title: "在宅勤務", category: "川村" });
       }
-      silentRefetch();
+      syncDb();
     },
-    [optimisticToggleWfh, silentRefetch]
+    [optimisticToggleWfh, syncDb]
   );
 
   const handleEventAdded = useCallback(() => {
-    silentRefetch();
-  }, [silentRefetch]);
+    syncDb();
+  }, [syncDb]);
 
   const handleDayTap = useCallback((day: DaySchedule) => setSelectedDay(day), []);
 
@@ -125,7 +125,7 @@ export default function Home() {
         {(tab === "calendar" || tab === "week") && error && (
           <div className="mx-2 p-4 bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-xl text-sm text-red-600 dark:text-red-400">
             読み込みに失敗しました
-            <button onClick={silentRefetch} className="block mt-2 px-3 py-1.5 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 font-medium rounded-lg">再試行</button>
+            <button onClick={syncDb} className="block mt-2 px-3 py-1.5 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 font-medium rounded-lg">再試行</button>
           </div>
         )}
 
