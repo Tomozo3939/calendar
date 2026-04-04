@@ -40,14 +40,14 @@ export function PickupList({ days, onAssign }: PickupListProps) {
                 </span>
                 <span className="text-xs text-gray-400">({weekday})</span>
                 {today && <span className="text-[10px] bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded">今日</span>}
-                {day.isWfh && <span className="text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded">パパ在宅</span>}
+                {day.isWfh && <span className="text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded">とっちゃん在宅</span>}
               </div>
 
               <div className="grid grid-cols-2 gap-2">
                 {day.pickups.map((pickup, i) => {
-                  const bgColor = pickup.assignee === "パパ"
+                  const bgColor = pickup.assignee === "とっちゃん"
                     ? "bg-blue-50 border-blue-200 text-blue-700"
-                    : pickup.assignee === "ママ"
+                    : pickup.assignee === "かあか"
                       ? "bg-pink-50 border-pink-200 text-pink-700"
                       : "bg-amber-50 border-amber-200 text-amber-700";
 

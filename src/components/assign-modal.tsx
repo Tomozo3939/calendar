@@ -49,34 +49,34 @@ export function AssignModal({ pickup, onAssign, onUnassign, onClose }: AssignMod
 
         <div className="grid grid-cols-2 gap-3 mb-3">
           <button
-            onClick={() => onAssign("パパ")}
-            aria-label="パパに割り当て"
+            onClick={() => onAssign("とっちゃん")}
+            aria-label="とっちゃんに割り当て"
             className={`
               py-4 rounded-xl text-lg font-bold
               transition-colors active:scale-[0.97]
               focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:outline-none
-              ${pickup.assignee === "パパ"
+              ${pickup.assignee === "とっちゃん"
                 ? "bg-blue-500 text-white shadow-lg shadow-blue-200"
                 : "bg-blue-50 text-blue-600 border-2 border-blue-200"
               }
             `}
           >
-            パパ
+            とっちゃん
           </button>
           <button
-            onClick={() => onAssign("ママ")}
-            aria-label="ママに割り当て"
+            onClick={() => onAssign("かあか")}
+            aria-label="かあかに割り当て"
             className={`
               py-4 rounded-xl text-lg font-bold
               transition-colors active:scale-[0.97]
               focus-visible:ring-2 focus-visible:ring-pink-400 focus-visible:outline-none
-              ${pickup.assignee === "ママ"
+              ${pickup.assignee === "かあか"
                 ? "bg-pink-500 text-white shadow-lg shadow-pink-200"
                 : "bg-pink-50 text-pink-600 border-2 border-pink-200"
               }
             `}
           >
-            ママ
+            かあか
           </button>
         </div>
 

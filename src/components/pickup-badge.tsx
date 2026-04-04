@@ -33,9 +33,9 @@ function MoonIcon() {
 }
 
 export function PickupBadge({ type, assignee, onTap }: PickupBadgeProps) {
-  const bgColor = assignee === "パパ"
+  const bgColor = assignee === "とっちゃん"
     ? "bg-blue-100 text-blue-700 border-blue-200"
-    : assignee === "ママ"
+    : assignee === "かあか"
       ? "bg-pink-100 text-pink-700 border-pink-200"
       : "bg-amber-50 text-amber-700 border-amber-200";
 

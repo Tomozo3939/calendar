@@ -203,9 +203,9 @@ export async function POST(req: NextRequest) {
     if (category === "pickup" && type) {
       const summary = pickupSummary(type, assignee ?? null);
       const colorId =
-        assignee === "パパ"
+        assignee === "とっちゃん"
           ? COLOR_IDS.papa
-          : assignee === "ママ"
+          : assignee === "かあか"
             ? COLOR_IDS.mama
             : COLOR_IDS.unset;
       const event = await createEvent(ids.pickup, {

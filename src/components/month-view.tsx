@@ -71,9 +71,9 @@ export function MonthView({ days, currentMonth, onAssign }: MonthViewProps) {
                     className={`
                       w-full text-[10px] leading-snug rounded px-0.5 py-0.5 min-h-[20px]
                       focus-visible:ring-1 focus-visible:ring-blue-400 focus-visible:outline-none
-                      ${p.assignee === "パパ"
+                      ${p.assignee === "とっちゃん"
                         ? "bg-blue-100 text-blue-700"
-                        : p.assignee === "ママ"
+                        : p.assignee === "かあか"
                           ? "bg-pink-100 text-pink-700"
                           : "bg-amber-50 text-amber-600"
                       }

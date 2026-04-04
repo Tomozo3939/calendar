@@ -34,9 +34,9 @@ export async function PATCH(
     if (type && calendar === "pickup") {
       const summary = pickupSummary(type, assignee ?? null);
       const colorId =
-        assignee === "パパ"
+        assignee === "とっちゃん"
           ? COLOR_IDS.papa
-          : assignee === "ママ"
+          : assignee === "かあか"
             ? COLOR_IDS.mama
             : COLOR_IDS.unset;
       const event = await updateEvent(calendarId, id, { summary, colorId });

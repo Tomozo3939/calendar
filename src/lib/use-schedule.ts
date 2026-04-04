@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import type { DaySchedule } from "@/types/calendar";
-import { formatDate, getMonday, getDays } from "@/lib/date-utils";
+import type { DaySchedule, PickupEvent, Person } from "@/types/calendar";
+import { formatDate, getMonday } from "@/lib/date-utils";
 
 interface ScheduleData {
   days: DaySchedule[];
@@ -32,7 +32,6 @@ export function useSchedule(baseDate: Date, range: "week" | "month") {
       const month = baseDate.getMonth();
       const firstDay = new Date(year, month, 1);
       const lastDay = new Date(year, month + 1, 0);
-      // カレンダー表示用に前後の週も含める
       const calStart = getMonday(firstDay);
       const calEnd = new Date(lastDay);
       calEnd.setDate(calEnd.getDate() + (7 - calEnd.getDay()) % 7);
@@ -56,5 +55,30 @@ export function useSchedule(baseDate: Date, range: "week" | "month") {
     fetchSchedule();
   }, [fetchSchedule]);
 
-  return { data, loading, error, refetch: fetchSchedule };
+  /** 楽観的にUIを更新してからAPIを叩く */
+  const optimisticAssign = useCallback(
+    (pickup: PickupEvent, assignee: Person | null) => {
+      setData((prev) => {
+        if (!prev) return prev;
+        const newDays = prev.days.map((day) => {
+          if (day.date !== pickup.date) return day;
+          return {
+            ...day,
+            pickups: day.pickups.map((p) =>
+              p.type === pickup.type
+                ? { ...p, assignee }
+                : p
+            ),
+          };
+        });
+        const unresolvedCount = newDays.reduce((count, day) => {
+          return count + (day.pickups.some((p) => p.assignee === null) ? 1 : 0);
+        }, 0);
+        return { days: newDays, unresolvedCount };
+      });
+    },
+    []
+  );
+
+  return { data, loading, error, refetch: fetchSchedule, optimisticAssign };
 }

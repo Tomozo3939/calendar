@@ -1,4 +1,4 @@
-export type Person = "パパ" | "ママ";
+export type Person = "とっちゃん" | "かあか";
 
 export type EventCategory =
   | "送迎"

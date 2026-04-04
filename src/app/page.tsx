@@ -15,7 +15,7 @@ export default function Home() {
   const [baseDate, setBaseDate] = useState(() => new Date());
   const [view, setView] = useState<"week" | "month">("week");
   const [tab, setTab] = useState<Tab>("calendar");
-  const { data, loading, error, refetch } = useSchedule(baseDate, view);
+  const { data, loading, error, refetch, optimisticAssign } = useSchedule(baseDate, view);
 
   const navigate = useCallback(
     (direction: -1 | 1) => {
@@ -36,31 +36,41 @@ export default function Home() {
 
   const handleAssign = useCallback(
     async (pickup: PickupEvent, assignee: Person | null) => {
-      if (!pickup.googleEventId) {
-        await fetch("/api/events", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            category: "pickup",
-            type: pickup.type,
-            date: pickup.date,
-            assignee,
-          }),
-        });
-      } else {
-        await fetch(`/api/events/${pickup.googleEventId}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            assignee,
-            type: pickup.type,
-            calendar: "pickup",
-          }),
-        });
+      // 即座にUIを更新
+      optimisticAssign(pickup, assignee);
+
+      // バックグラウンドでAPIを叩く
+      try {
+        if (!pickup.googleEventId) {
+          await fetch("/api/events", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              category: "pickup",
+              type: pickup.type,
+              date: pickup.date,
+              assignee,
+            }),
+          });
+        } else {
+          await fetch(`/api/events/${pickup.googleEventId}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              assignee,
+              type: pickup.type,
+              calendar: "pickup",
+            }),
+          });
+        }
+        // API完了後にサーバーデータと同期
+        refetch();
+      } catch {
+        // 失敗時はサーバーデータで上書き
+        refetch();
       }
-      refetch();
     },
-    [refetch]
+    [refetch, optimisticAssign]
   );
 
   const tabClass = (t: Tab) =>
