@@ -56,22 +56,28 @@ export function DayDetail({ schedule, onAssign, onClose, onEventAdded }: DayDeta
     onEventAdded();
   };
 
+  const [wfhLoading, setWfhLoading] = useState(false);
+
   const handleToggleWfh = async () => {
-    if (schedule.isWfh) {
-      // 在宅を削除（川村カレンダーの「在宅」イベントを削除）
-      const wfhEvent = schedule.kawamuraEvents.find((e) => e.isWfh);
-      if (wfhEvent) {
-        await supabase.from("events").delete().eq("id", wfhEvent.id);
+    if (wfhLoading) return;
+    setWfhLoading(true);
+    try {
+      if (schedule.isWfh) {
+        const wfhEvent = schedule.kawamuraEvents.find((e) => e.isWfh);
+        if (wfhEvent) {
+          await supabase.from("events").delete().eq("id", wfhEvent.id);
+        }
+      } else {
+        await supabase.from("events").insert({
+          date: schedule.date,
+          title: "在宅勤務",
+          category: "川村",
+        });
       }
-    } else {
-      // 在宅を追加
-      await supabase.from("events").insert({
-        date: schedule.date,
-        title: "在宅勤務",
-        category: "川村",
-      });
+      onEventAdded();
+    } finally {
+      setWfhLoading(false);
     }
-    onEventAdded();
   };
 
   function resetForm() {
@@ -134,13 +140,14 @@ export function DayDetail({ schedule, onAssign, onClose, onEventAdded }: DayDeta
           {/* 在宅ワンタップ */}
           <button
             onClick={handleToggleWfh}
-            className={`w-full py-2.5 rounded-xl text-sm font-medium transition-colors ${
+            disabled={wfhLoading}
+            className={`w-full py-2.5 rounded-xl text-sm font-medium transition-colors disabled:opacity-50 ${
               schedule.isWfh
                 ? "bg-green-500 text-white"
                 : "bg-[var(--color-surface)] text-[var(--color-text-sub)] border border-[var(--color-border)]"
             }`}
           >
-            {schedule.isWfh ? "在宅勤務 (ON)" : "在宅勤務にする"}
+            {wfhLoading ? "..." : schedule.isWfh ? "在宅勤務 (ON)" : "在宅勤務にする"}
           </button>
 
           {/* 送迎: 送り(上) → 迎え(下) */}

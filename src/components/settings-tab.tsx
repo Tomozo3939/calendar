@@ -17,16 +17,15 @@ export function SettingsTab() {
 
   function applyTheme(mode: ThemeMode) {
     const html = document.documentElement;
+    html.classList.remove("dark", "light");
     if (mode === "dark") {
       html.classList.add("dark");
       html.style.colorScheme = "dark";
     } else if (mode === "light") {
-      html.classList.remove("dark");
+      html.classList.add("light");
       html.style.colorScheme = "light";
     } else {
-      html.classList.remove("dark");
       html.style.colorScheme = "";
-      // システム設定に従う
       if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
         html.classList.add("dark");
       }
