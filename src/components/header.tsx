@@ -1,9 +1,10 @@
 "use client";
 
+import { formatDate, getMonday } from "@/lib/date-utils";
+
 interface HeaderProps {
   baseDate: Date;
   view: "week" | "month";
-  onViewChange: (view: "week" | "month") => void;
   onPrev: () => void;
   onNext: () => void;
   onToday: () => void;
@@ -12,7 +13,6 @@ interface HeaderProps {
 export function Header({
   baseDate,
   view,
-  onViewChange,
   onPrev,
   onNext,
   onToday,
@@ -20,12 +20,30 @@ export function Header({
   const year = baseDate.getFullYear();
   const month = baseDate.getMonth() + 1;
 
+  // 週表示のときは日付範囲を表示
+  let subtitle = "";
+  if (view === "week") {
+    const monday = getMonday(baseDate);
+    const sunday = new Date(monday);
+    sunday.setDate(sunday.getDate() + 6);
+    const m1 = monday.getMonth() + 1;
+    const d1 = monday.getDate();
+    const m2 = sunday.getMonth() + 1;
+    const d2 = sunday.getDate();
+    subtitle = `${m1}/${d1} - ${m2}/${d2}`;
+  }
+
   return (
     <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-gray-100">
       <div className="flex items-center justify-between px-4 py-3">
-        <h1 className="text-lg font-bold tracking-tight">
-          {year}年{month}月
-        </h1>
+        <div>
+          <h1 className="text-lg font-bold tracking-tight">
+            {year}年{month}月
+          </h1>
+          {subtitle && (
+            <p className="text-xs text-gray-400">{subtitle}</p>
+          )}
+        </div>
 
         <div className="flex items-center gap-1">
           <button
@@ -54,29 +72,6 @@ export function Header({
             </svg>
           </button>
         </div>
-      </div>
-
-      <div className="flex gap-1 px-4 pb-2">
-        <button
-          onClick={() => onViewChange("week")}
-          className={`px-3 py-1 text-xs rounded-full font-medium transition-colors focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:outline-none ${
-            view === "week"
-              ? "bg-gray-900 text-white"
-              : "bg-gray-100 text-gray-500"
-          }`}
-        >
-          週
-        </button>
-        <button
-          onClick={() => onViewChange("month")}
-          className={`px-3 py-1 text-xs rounded-full font-medium transition-colors focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:outline-none ${
-            view === "month"
-              ? "bg-gray-900 text-white"
-              : "bg-gray-100 text-gray-500"
-          }`}
-        >
-          月
-        </button>
       </div>
     </header>
   );
