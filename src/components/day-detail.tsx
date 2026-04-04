@@ -56,11 +56,34 @@ export function DayDetail({ schedule, onAssign, onClose, onEventAdded }: DayDeta
     onEventAdded();
   };
 
+  const handleToggleWfh = async () => {
+    if (schedule.isWfh) {
+      // 在宅を削除（川村カレンダーの「在宅」イベントを削除）
+      const wfhEvent = schedule.kawamuraEvents.find((e) => e.isWfh);
+      if (wfhEvent) {
+        await supabase.from("events").delete().eq("id", wfhEvent.id);
+      }
+    } else {
+      // 在宅を追加
+      await supabase.from("events").insert({
+        date: schedule.date,
+        title: "在宅勤務",
+        category: "川村",
+      });
+    }
+    onEventAdded();
+  };
+
   function resetForm() {
     setNewTitle("");
     setNewUrl("");
     setAddMode(null);
   }
+
+  // 送り → 迎え の順番で表示
+  const okuri = schedule.pickups.find((p) => p.type === "送り");
+  const mukae = schedule.pickups.find((p) => p.type === "迎え");
+  const orderedPickups = [okuri, mukae].filter(Boolean) as PickupEvent[];
 
   return (
     <div
@@ -87,9 +110,6 @@ export function DayDetail({ schedule, onAssign, onClose, onEventAdded }: DayDeta
                     {schedule.holidayName ?? "休日"}
                   </span>
                 )}
-                {schedule.isWfh && (
-                  <span className="text-[10px] bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300 px-1.5 py-0.5 rounded">在宅</span>
-                )}
                 {schedule.trash.map((t) => (
                   <span key={t} className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${getTrashColor(t)}`}>
                     {getTrashLabel(t)}
@@ -111,13 +131,25 @@ export function DayDetail({ schedule, onAssign, onClose, onEventAdded }: DayDeta
         </div>
 
         <div className="px-4 py-3 space-y-4">
-          {/* 送迎 */}
-          {schedule.pickups.length > 0 && (
+          {/* 在宅ワンタップ */}
+          <button
+            onClick={handleToggleWfh}
+            className={`w-full py-2.5 rounded-xl text-sm font-medium transition-colors ${
+              schedule.isWfh
+                ? "bg-green-500 text-white"
+                : "bg-[var(--color-surface)] text-[var(--color-text-sub)] border border-[var(--color-border)]"
+            }`}
+          >
+            {schedule.isWfh ? "在宅勤務 (ON)" : "在宅勤務にする"}
+          </button>
+
+          {/* 送迎: 送り(上) → 迎え(下) */}
+          {orderedPickups.length > 0 && (
             <section>
               <h4 className="text-xs font-bold text-[var(--color-text-sub)] mb-2">送迎</h4>
               <div className="space-y-2">
-                {schedule.pickups.map((pickup, i) => (
-                  <div key={`${pickup.type}-${i}`} className="flex items-center gap-3">
+                {orderedPickups.map((pickup) => (
+                  <div key={pickup.type} className="flex items-center gap-3">
                     <span className="text-sm font-medium text-[var(--color-text)] w-8">{pickup.type}</span>
                     <div className="flex gap-2 flex-1">
                       {(["とっちゃん", "かあか"] as const).map((person) => (
@@ -142,6 +174,13 @@ export function DayDetail({ schedule, onAssign, onClose, onEventAdded }: DayDeta
             </section>
           )}
 
+          {/* 保育園休み */}
+          {schedule.isHoliday && orderedPickups.length === 0 && (
+            <div className="text-center py-2 text-sm text-[var(--color-text-sub)]">
+              保育園おやすみ
+            </div>
+          )}
+
           {/* 予定 */}
           {(schedule.familyEvents.length > 0 || schedule.kawamuraEvents.length > 0 || schedule.moekaEvents.length > 0) && (
             <section>
@@ -154,14 +193,14 @@ export function DayDetail({ schedule, onAssign, onClose, onEventAdded }: DayDeta
                     {ev.startTime && <span className="text-xs text-[var(--color-text-sub)] ml-auto font-mono">{ev.startTime}</span>}
                   </div>
                 ))}
-                {schedule.kawamuraEvents.map((ev) => (
+                {schedule.kawamuraEvents.filter((e) => !e.isWfh).map((ev) => (
                   <div key={ev.id} className="flex items-center gap-2 py-1.5">
                     <span className="w-2 h-2 rounded-full shrink-0 bg-blue-400" />
                     <span className="text-sm text-[var(--color-text)]">{ev.title}</span>
                     {ev.startTime && <span className="text-xs text-[var(--color-text-sub)] ml-auto font-mono">{ev.startTime}</span>}
                   </div>
                 ))}
-                {schedule.moekaEvents.map((ev) => (
+                {schedule.moekaEvents.filter((e) => !e.isWfh).map((ev) => (
                   <div key={ev.id} className="flex items-center gap-2 py-1.5">
                     <span className="w-2 h-2 rounded-full shrink-0 bg-pink-400" />
                     <span className="text-sm text-[var(--color-text)]">{ev.title}</span>

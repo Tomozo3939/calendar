@@ -4,7 +4,7 @@ import { useState, useCallback } from "react";
 import { Header } from "@/components/header";
 import { WeekView } from "@/components/week-view";
 import { MonthView } from "@/components/month-view";
-import { UnresolvedBanner } from "@/components/unresolved-banner";
+import { SettingsTab } from "@/components/settings-tab";
 import { DayDetail } from "@/components/day-detail";
 import { TodoList } from "@/components/todo-list";
 import { ShoppingList } from "@/components/shopping-list";
@@ -106,8 +106,6 @@ export default function Home() {
         onTouchStart={(tab === "calendar" || tab === "week") ? swipe.onTouchStart : undefined}
         onTouchEnd={(tab === "calendar" || tab === "week") ? swipe.onTouchEnd : undefined}
       >
-        {(tab === "calendar" || tab === "week") && data && <UnresolvedBanner count={data.unresolvedCount} />}
-
         {(tab === "calendar" || tab === "week") && loading && (
           <div className="flex justify-center py-12" role="status"><div className="w-6 h-6 border-2 border-blue-300 border-t-blue-600 rounded-full animate-spin" /></div>
         )}
@@ -130,22 +128,7 @@ export default function Home() {
         {tab === "todo" && <TodoList />}
         {tab === "shop" && <ShoppingList />}
 
-        {tab === "settings" && (
-          <div className="px-4 space-y-3">
-            <div className="bg-[var(--color-surface)] rounded-xl border border-[var(--color-border)] p-4">
-              <h2 className="text-sm font-bold text-[var(--color-text)] mb-2">ゴミの日</h2>
-              <div className="text-xs text-[var(--color-text-sub)] space-y-1">
-                <p>火曜・金曜: 燃えるゴミ</p>
-                <p>第1・3・5木曜: カン・ビン</p>
-                <p>第2・4木曜: ペットボトル</p>
-              </div>
-            </div>
-            <div className="bg-[var(--color-surface)] rounded-xl border border-[var(--color-border)] p-4">
-              <h2 className="text-sm font-bold text-[var(--color-text)] mb-2">保育園</h2>
-              <p className="text-xs text-[var(--color-text-sub)]">土日祝は休園</p>
-            </div>
-          </div>
-        )}
+        {tab === "settings" && <SettingsTab />}
       </main>
 
       {selectedDay && (
