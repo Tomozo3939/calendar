@@ -68,13 +68,18 @@ export async function createEvent(
   }
 ) {
   const cal = getCalendarClient();
+  // 終日イベントのendは翌日を指定する（Google Calendar仕様）
+  const endDate = new Date(event.date + "T00:00:00");
+  endDate.setDate(endDate.getDate() + 1);
+  const endStr = endDate.toISOString().slice(0, 10);
+
   const res = await cal.events.insert({
     calendarId,
     requestBody: {
       summary: event.summary,
       description: event.description,
       start: { date: event.date },
-      end: { date: event.date },
+      end: { date: endStr },
       colorId: event.colorId,
     },
   });

@@ -1,35 +1,29 @@
 import { NextResponse } from "next/server";
+import { createEvent } from "@/lib/google-calendar";
+import { getCalendarIds } from "@/lib/calendar-config";
 
 export async function GET() {
-  const hasJson = !!process.env.GOOGLE_SERVICE_ACCOUNT_KEY;
-  const hasB64 = !!process.env.GOOGLE_SA_KEY_BASE64;
-  
-  let jsonValid = false;
-  let b64Valid = false;
-  let clientEmail = "";
-  
-  if (hasJson) {
-    try {
-      const parsed = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_KEY!);
-      jsonValid = !!parsed.private_key;
-      clientEmail = parsed.client_email || "";
-    } catch {}
+  const ids = getCalendarIds();
+
+  try {
+    const result = await createEvent(ids.pickup, {
+      summary: "テスト: debug",
+      date: "2026-04-09",
+    });
+    return NextResponse.json({
+      status: "INSERT_OK",
+      eventId: result.id,
+      pickupId: ids.pickup.slice(0, 10) + "...",
+    });
+  } catch (error) {
+    const msg = error instanceof Error ? error.message : String(error);
+    const detail =
+      (error as { response?: { data?: unknown } })?.response?.data;
+    return NextResponse.json({
+      status: "INSERT_FAIL",
+      error: msg,
+      detail: detail ?? null,
+      pickupId: ids.pickup.slice(0, 10) + "...",
+    });
   }
-  
-  if (hasB64) {
-    try {
-      const decoded = Buffer.from(process.env.GOOGLE_SA_KEY_BASE64!, "base64").toString("utf8");
-      const parsed = JSON.parse(decoded);
-      b64Valid = !!parsed.private_key;
-      if (!clientEmail) clientEmail = parsed.client_email || "";
-    } catch {}
-  }
-  
-  return NextResponse.json({
-    hasJson,
-    hasB64,
-    jsonValid,
-    b64Valid,
-    clientEmail: clientEmail.slice(0, 20) + "...",
-  });
 }
