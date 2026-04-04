@@ -68,14 +68,18 @@ export default function Home() {
         if (!prev || prev.date !== dateStr) return prev;
         return { ...prev, isWfh: !currentlyWfh };
       });
-      // DB書き込み
+      // DB書き込み + バックグラウンドrefetch
       if (currentlyWfh && wfhEventId) {
         await supabase.from("events").delete().eq("id", wfhEventId);
+      } else if (currentlyWfh && !wfhEventId) {
+        // IDがない場合はtitleで削除
+        await supabase.from("events").delete().eq("date", dateStr).eq("title", "在宅勤務").eq("category", "川村");
       } else if (!currentlyWfh) {
         await supabase.from("events").insert({ date: dateStr, title: "在宅勤務", category: "川村" });
       }
+      silentRefetch();
     },
-    [optimisticToggleWfh]
+    [optimisticToggleWfh, silentRefetch]
   );
 
   const handleEventAdded = useCallback(() => {

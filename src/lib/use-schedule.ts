@@ -139,9 +139,15 @@ export function useSchedule(baseDate: Date, range: "week" | "month") {
     }
   }, [getDateRange]);
 
+  // range/baseDateが変わったらfetch。前のデータが残らないようにする
+  const prevRangeKey = useRef("");
   useEffect(() => {
-    fetchSchedule(!initialLoaded.current);
-  }, [fetchSchedule]);
+    const { start, end } = getDateRange();
+    const rangeKey = `${range}-${start}-${end}`;
+    const isNewRange = rangeKey !== prevRangeKey.current;
+    prevRangeKey.current = rangeKey;
+    fetchSchedule(isNewRange || !initialLoaded.current);
+  }, [fetchSchedule, getDateRange, range]);
 
   /** バックグラウンドでリフレッシュ（UIを止めない） */
   const silentRefetch = useCallback(() => {

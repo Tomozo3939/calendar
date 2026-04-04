@@ -44,9 +44,12 @@ export function TodoList() {
     setDate("");
     setUrl("");
     setAdding(false);
-    await supabase.from("todos").insert({ title: newTitle, date: newDate, url: newUrl });
-    await fetchTodos();
-    setSubmitting(false);
+    try {
+      await supabase.from("todos").insert({ title: newTitle, date: newDate, url: newUrl });
+      await fetchTodos();
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   async function toggleTodo(id: string, done: boolean) {
