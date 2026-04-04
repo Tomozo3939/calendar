@@ -35,6 +35,7 @@ export interface DaySchedule {
   kawamuraEvents: PersonalEvent[];
   moekaEvents: PersonalEvent[];
   isHoliday: boolean;
+  holidayName?: string;
 }
 
 export type TrashType = "燃えるゴミ" | "カンビン" | "ペットボトル";

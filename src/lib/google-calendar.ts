@@ -10,9 +10,19 @@ import { google } from "googleapis";
  */
 
 function getAuth() {
-  const credentials = JSON.parse(
-    process.env.GOOGLE_SERVICE_ACCOUNT_KEY || "{}"
-  );
+  let credentials: Record<string, unknown>;
+
+  // Base64エンコード版を優先（Vercel環境変数でJSON特殊文字が壊れる問題の回避）
+  if (process.env.GOOGLE_SA_KEY_BASE64) {
+    credentials = JSON.parse(
+      Buffer.from(process.env.GOOGLE_SA_KEY_BASE64, "base64").toString("utf8")
+    );
+  } else {
+    credentials = JSON.parse(
+      process.env.GOOGLE_SERVICE_ACCOUNT_KEY || "{}"
+    );
+  }
+
   return new google.auth.GoogleAuth({
     credentials,
     scopes: ["https://www.googleapis.com/auth/calendar"],

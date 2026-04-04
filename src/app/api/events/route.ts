@@ -5,6 +5,7 @@ import { getTrashTypes } from "@/lib/trash-schedule";
 import type { Person, PickupType, DaySchedule } from "@/types/calendar";
 import { parsePickupSummary } from "@/lib/google-calendar";
 import { formatDate } from "@/lib/date-utils";
+import { isNurseryHoliday, getHolidayName } from "@/lib/holidays";
 
 /**
  * GET /api/events?start=YYYY-MM-DD&end=YYYY-MM-DD
@@ -59,7 +60,8 @@ export async function GET(req: NextRequest) {
           familyEvents: [],
           kawamuraEvents: [],
           moekaEvents: [],
-          isHoliday: false,
+          isHoliday: isNurseryHoliday(date, dateStr),
+          holidayName: getHolidayName(dateStr) ?? undefined,
         });
       }
       return scheduleMap.get(dateStr)!;
@@ -139,9 +141,14 @@ export async function GET(req: NextRequest) {
       const dateStr = formatDate(d);
       const day = getOrCreate(dateStr);
 
-      // 平日（月〜金）で送迎スロットがなければデフォルト生成
-      const dow = d.getDay(); // 0=日, 6=土
-      if (dow >= 1 && dow <= 5) {
+      // 祝日判定
+      const holidayName = getHolidayName(dateStr);
+      if (holidayName) {
+        day.isHoliday = true;
+      }
+
+      // 保育園が開いている日（平日かつ祝日でない）のみ送迎スロット生成
+      if (!isNurseryHoliday(d, dateStr)) {
         const hasOkuri = day.pickups.some((p) => p.type === "送り");
         const hasMukae = day.pickups.some((p) => p.type === "迎え");
         if (!hasOkuri) {

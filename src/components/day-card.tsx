@@ -51,10 +51,15 @@ export function DayCard({ schedule, onPickupTap }: DayCardProps) {
             {weekday}
           </span>
         </div>
-        <div className="flex gap-0.5">
+        <div className="flex gap-0.5 flex-wrap">
+          {schedule.isHoliday && (
+            <span className="text-[9px] bg-red-100 text-red-600 px-1 rounded font-medium">
+              {schedule.holidayName ?? "休"}
+            </span>
+          )}
           {schedule.isWfh && (
             <span className="text-[10px] bg-green-100 text-green-700 px-1 rounded">
-              とっちゃん在宅
+              在宅
             </span>
           )}
           {schedule.trash.map((t) => (
