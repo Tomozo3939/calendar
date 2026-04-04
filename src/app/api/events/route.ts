@@ -245,9 +245,10 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ error: "Invalid category" }, { status: 400 });
   } catch (error) {
-    console.error("Failed to create event:", error);
+    const msg = error instanceof Error ? error.message : String(error);
+    console.error("Failed to create event:", msg, error);
     return NextResponse.json(
-      { error: "Failed to create event" },
+      { error: "Failed to create event", detail: msg },
       { status: 500 }
     );
   }
