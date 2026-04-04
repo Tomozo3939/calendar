@@ -33,11 +33,24 @@ function getCalendarClient() {
   return google.calendar({ version: "v3", auth: getAuth() });
 }
 
-/** カレンダー一覧を取得 */
-export async function listCalendars() {
+/**
+ * サービスアカウントのカレンダーリストにカレンダーを追加する
+ * 書き込み操作の前に呼ぶ（既に追加済みならスキップ）
+ */
+const subscribedCalendars = new Set<string>();
+
+async function ensureSubscribed(calendarId: string) {
+  if (subscribedCalendars.has(calendarId)) return;
+
   const cal = getCalendarClient();
-  const res = await cal.calendarList.list();
-  return res.data.items || [];
+  try {
+    await cal.calendarList.insert({
+      requestBody: { id: calendarId },
+    });
+  } catch {
+    // 既に追加済みの場合は409 Conflictが返る → 無視
+  }
+  subscribedCalendars.add(calendarId);
 }
 
 /** 指定期間のイベントを取得 */
@@ -67,8 +80,9 @@ export async function createEvent(
     colorId?: string;
   }
 ) {
+  await ensureSubscribed(calendarId);
+
   const cal = getCalendarClient();
-  // 終日イベントのendは翌日を指定する（Google Calendar仕様）
   const endDate = new Date(event.date + "T00:00:00");
   endDate.setDate(endDate.getDate() + 1);
   const endStr = endDate.toISOString().slice(0, 10);
@@ -96,6 +110,8 @@ export async function updateEvent(
     colorId?: string;
   }
 ) {
+  await ensureSubscribed(calendarId);
+
   const cal = getCalendarClient();
   const res = await cal.events.patch({
     calendarId,
@@ -107,13 +123,15 @@ export async function updateEvent(
 
 /** イベントを削除 */
 export async function deleteEvent(calendarId: string, eventId: string) {
+  await ensureSubscribed(calendarId);
+
   const cal = getCalendarClient();
   await cal.events.delete({ calendarId, eventId });
 }
 
 /**
  * 送迎イベントのsummary生成
- * 例: "送り: パパ" / "迎え: ママ" / "送り: ？"
+ * 例: "送り: とっちゃん" / "迎え: かあか" / "送り: ？"
  */
 export function pickupSummary(
   type: "送り" | "迎え",
