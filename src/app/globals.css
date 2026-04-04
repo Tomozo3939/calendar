@@ -1,12 +1,21 @@
 @import "tailwindcss";
 
 :root {
-  --color-papa: #3b82f6;
-  --color-mama: #ec4899;
-  --color-unset: #d97706;
-  --color-wfh: #22c55e;
-  --color-trash: #9ca3af;
-  --color-family: #ef4444;
+  --color-bg: #ffffff;
+  --color-surface: #f9fafb;
+  --color-border: #e5e7eb;
+  --color-text: #111827;
+  --color-text-sub: #6b7280;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg: #0f0f0f;
+    --color-surface: #1a1a1a;
+    --color-border: #2a2a2a;
+    --color-text: #f0f0f0;
+    --color-text-sub: #999;
+  }
 }
 
 body {
@@ -14,14 +23,14 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   touch-action: manipulation;
+  background: var(--color-bg);
+  color: var(--color-text);
 }
 
-/* タッチデバイスのタップハイライト制御 */
 button, a {
   -webkit-tap-highlight-color: rgba(0, 0, 0, 0.05);
 }
 
-/* reduced motion */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
