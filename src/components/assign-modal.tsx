@@ -44,7 +44,7 @@ export function AssignModal({ pickup, onAssign, onUnassign, onClose }: AssignMod
           {month}/{day}（{weekday}）
         </p>
         <h3 className="text-base font-bold text-center mb-5">
-          {pickup.type === "送り" ? "☀ 朝の送り" : "🌙 夕方の迎え"}
+          {pickup.type === "送り" ? "朝の送り" : "夕方の迎え"}
         </h3>
 
         <div className="grid grid-cols-2 gap-3 mb-3">

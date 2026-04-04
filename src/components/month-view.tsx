@@ -3,7 +3,7 @@
 import { useState } from "react";
 import type { DaySchedule, PickupEvent, Person } from "@/types/calendar";
 import { parseDate, isToday, isWeekend } from "@/lib/date-utils";
-import { getTrashEmoji } from "@/lib/trash-schedule";
+import { getTrashLabel, getTrashColor } from "@/lib/trash-schedule";
 import { AssignModal } from "./assign-modal";
 
 interface MonthViewProps {
@@ -79,7 +79,7 @@ export function MonthView({ days, currentMonth, onAssign }: MonthViewProps) {
                       }
                     `}
                   >
-                    {p.type === "送り" ? "☀" : "🌙"}{p.assignee?.[0] ?? "—"}
+                    {p.type[0]}{p.assignee?.[0] ?? "—"}
                   </button>
                 ))}
                 {day.isWfh && (
@@ -88,7 +88,9 @@ export function MonthView({ days, currentMonth, onAssign }: MonthViewProps) {
                   </div>
                 )}
                 {day.trash.map((t) => (
-                  <span key={t} className="text-[10px]" aria-label={t}>{getTrashEmoji(t)}</span>
+                  <span key={t} className={`text-[8px] font-bold px-0.5 rounded ${getTrashColor(t)}`} aria-label={t}>
+                    {getTrashLabel(t)}
+                  </span>
                 ))}
               </div>
             </div>

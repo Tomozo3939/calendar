@@ -2,7 +2,7 @@
 
 import type { DaySchedule, PickupEvent } from "@/types/calendar";
 import { getWeekdayShort, isToday, parseDate, isWeekend } from "@/lib/date-utils";
-import { getTrashEmoji } from "@/lib/trash-schedule";
+import { getTrashLabel, getTrashColor } from "@/lib/trash-schedule";
 import { PickupBadge } from "./pickup-badge";
 
 interface DayCardProps {
@@ -58,8 +58,8 @@ export function DayCard({ schedule, onPickupTap }: DayCardProps) {
             </span>
           )}
           {schedule.trash.map((t) => (
-            <span key={t} className="text-[10px]" aria-label={t}>
-              {getTrashEmoji(t)}
+            <span key={t} className={`text-[9px] font-bold px-1 rounded ${getTrashColor(t)}`} aria-label={t}>
+              {getTrashLabel(t)}
             </span>
           ))}
         </div>

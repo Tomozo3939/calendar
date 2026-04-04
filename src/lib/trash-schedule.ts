@@ -36,14 +36,26 @@ function getWeekOfMonth(date: Date): number {
   return Math.ceil(dayOfMonth / 7);
 }
 
-/** ゴミの種類に対応する絵文字 */
-export function getTrashEmoji(type: TrashType): string {
+/** ゴミの種類に対応するラベル（短縮） */
+export function getTrashLabel(type: TrashType): string {
   switch (type) {
     case "燃えるゴミ":
-      return "🔥";
+      return "燃";
     case "カンビン":
-      return "🥫";
+      return "缶";
     case "ペットボトル":
-      return "🧴";
+      return "PET";
+  }
+}
+
+/** ゴミの種類に対応する色 */
+export function getTrashColor(type: TrashType): string {
+  switch (type) {
+    case "燃えるゴミ":
+      return "bg-orange-100 text-orange-700";
+    case "カンビン":
+      return "bg-gray-200 text-gray-700";
+    case "ペットボトル":
+      return "bg-cyan-100 text-cyan-700";
   }
 }
