@@ -147,11 +147,23 @@ export function DayDetail({ schedule, onAssign, onClose, onEventAdded }: DayDeta
             <section>
               <h4 className="text-xs font-bold text-[var(--color-text-sub)] mb-2">予定</h4>
               <div className="space-y-1">
-                {[...schedule.familyEvents.map((e) => ({ ...e, color: "red" })),
-                  ...schedule.kawamuraEvents.map((e) => ({ ...e, color: "blue" })),
-                  ...schedule.moekaEvents.map((e) => ({ ...e, color: "pink" }))].map((ev) => (
+                {schedule.familyEvents.map((ev) => (
                   <div key={ev.id} className="flex items-center gap-2 py-1.5">
-                    <span className={`w-2 h-2 rounded-full shrink-0 bg-${ev.color}-400`} />
+                    <span className="w-2 h-2 rounded-full shrink-0 bg-red-400" />
+                    <span className="text-sm text-[var(--color-text)]">{ev.title}</span>
+                    {ev.startTime && <span className="text-xs text-[var(--color-text-sub)] ml-auto font-mono">{ev.startTime}</span>}
+                  </div>
+                ))}
+                {schedule.kawamuraEvents.map((ev) => (
+                  <div key={ev.id} className="flex items-center gap-2 py-1.5">
+                    <span className="w-2 h-2 rounded-full shrink-0 bg-blue-400" />
+                    <span className="text-sm text-[var(--color-text)]">{ev.title}</span>
+                    {ev.startTime && <span className="text-xs text-[var(--color-text-sub)] ml-auto font-mono">{ev.startTime}</span>}
+                  </div>
+                ))}
+                {schedule.moekaEvents.map((ev) => (
+                  <div key={ev.id} className="flex items-center gap-2 py-1.5">
+                    <span className="w-2 h-2 rounded-full shrink-0 bg-pink-400" />
                     <span className="text-sm text-[var(--color-text)]">{ev.title}</span>
                     {ev.startTime && <span className="text-xs text-[var(--color-text-sub)] ml-auto font-mono">{ev.startTime}</span>}
                   </div>

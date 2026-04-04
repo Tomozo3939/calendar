@@ -166,13 +166,13 @@ function TodoItem({
           )}
           {todo.url && (
             <a
-              href={todo.url}
+              href={todo.url.startsWith("http") ? todo.url : `https://${todo.url}`}
               target="_blank"
               rel="noopener noreferrer"
               className="text-[11px] text-blue-500 underline truncate max-w-[150px]"
               onClick={(e) => e.stopPropagation()}
             >
-              {new URL(todo.url).hostname}
+              {(() => { try { return new URL(todo.url.startsWith("http") ? todo.url : `https://${todo.url}`).hostname; } catch { return todo.url; } })()}
             </a>
           )}
         </div>
