@@ -9,9 +9,10 @@ import { AssignModal } from "./assign-modal";
 interface WeekViewProps {
   days: DaySchedule[];
   onAssign: (pickup: PickupEvent, assignee: Person | null) => void;
+  onDayTap: (day: DaySchedule) => void;
 }
 
-export function WeekView({ days, onAssign }: WeekViewProps) {
+export function WeekView({ days, onAssign, onDayTap }: WeekViewProps) {
   const [selectedPickup, setSelectedPickup] = useState<PickupEvent | null>(null);
 
   return (
@@ -38,15 +39,19 @@ export function WeekView({ days, onAssign }: WeekViewProps) {
                 }
               `}
             >
-              {/* 日付 */}
-              <div className="w-12 shrink-0 text-center pt-0.5">
+              {/* 日付（タップで詳細） */}
+              <button
+                onClick={() => onDayTap(day)}
+                className="w-12 shrink-0 text-center pt-0.5 rounded-lg active:bg-gray-100 focus-visible:ring-1 focus-visible:ring-blue-400 focus-visible:outline-none"
+                aria-label={`${month}/${dayNum}の詳細`}
+              >
                 <div className={`text-lg font-bold leading-none ${today ? "text-blue-600" : weekend ? "text-red-400" : "text-gray-800"}`}>
                   {dayNum}
                 </div>
                 <div className={`text-[10px] mt-0.5 ${weekend ? "text-red-300" : "text-gray-400"}`}>
                   {weekday}
                 </div>
-              </div>
+              </button>
 
               {/* 内容 */}
               <div className="flex-1 min-w-0 space-y-1.5">

@@ -5,15 +5,18 @@ import { Header } from "@/components/header";
 import { WeekView } from "@/components/week-view";
 import { MonthView } from "@/components/month-view";
 import { UnresolvedBanner } from "@/components/unresolved-banner";
+import { DayDetail } from "@/components/day-detail";
 import { useSchedule } from "@/lib/use-schedule";
+import { useSwipe } from "@/lib/use-swipe";
 import { supabase } from "@/lib/supabase";
-import type { PickupEvent, Person } from "@/types/calendar";
+import type { DaySchedule, PickupEvent, Person } from "@/types/calendar";
 
 type Tab = "calendar" | "week" | "settings";
 
 export default function Home() {
   const [baseDate, setBaseDate] = useState(() => new Date());
   const [tab, setTab] = useState<Tab>("calendar");
+  const [selectedDay, setSelectedDay] = useState<DaySchedule | null>(null);
   const view = tab === "week" ? "week" : "month";
   const { data, loading, error, refetch, optimisticAssign } = useSchedule(baseDate, view);
 
@@ -34,30 +37,53 @@ export default function Home() {
 
   const goToday = useCallback(() => setBaseDate(new Date()), []);
 
+  // スワイプでナビゲーション
+  const swipe = useSwipe({
+    onSwipeLeft: () => navigate(1),
+    onSwipeRight: () => navigate(-1),
+  });
+
   const handleAssign = useCallback(
     async (pickup: PickupEvent, assignee: Person | null) => {
+      // UIを即座に更新（リロードしない）
       optimisticAssign(pickup, assignee);
 
-      try {
-        if (pickup.googleEventId) {
-          // 既存レコードを更新
-          await supabase
-            .from("pickups")
-            .update({ assignee })
-            .eq("id", pickup.googleEventId);
-        } else {
-          // 新規作成（upsert: date+typeの組み合わせでユニーク）
-          await supabase.from("pickups").upsert(
+      // 日付詳細のデータも更新
+      setSelectedDay((prev) => {
+        if (!prev || prev.date !== pickup.date) return prev;
+        return {
+          ...prev,
+          pickups: prev.pickups.map((p) =>
+            p.type === pickup.type ? { ...p, assignee } : p
+          ),
+        };
+      });
+
+      // バックグラウンドでDBに書き込み（await不要）
+      if (pickup.googleEventId) {
+        supabase
+          .from("pickups")
+          .update({ assignee })
+          .eq("id", pickup.googleEventId)
+          .then();
+      } else {
+        supabase
+          .from("pickups")
+          .upsert(
             { date: pickup.date, type: pickup.type, assignee },
             { onConflict: "date,type" }
-          );
-        }
-        refetch();
-      } catch {
-        refetch();
+          )
+          .then();
       }
     },
-    [refetch, optimisticAssign]
+    [optimisticAssign]
+  );
+
+  const handleDayTap = useCallback(
+    (day: DaySchedule) => {
+      setSelectedDay(day);
+    },
+    []
   );
 
   const tabClass = (t: Tab) =>
@@ -75,7 +101,11 @@ export default function Home() {
         onToday={goToday}
       />
 
-      <main className="flex-1 py-3 space-y-3">
+      <main
+        className="flex-1 py-3 space-y-3"
+        onTouchStart={swipe.onTouchStart}
+        onTouchEnd={swipe.onTouchEnd}
+      >
         {data && <UnresolvedBanner count={data.unresolvedCount} />}
 
         {loading && (
@@ -102,9 +132,14 @@ export default function Home() {
               days={data.days}
               currentMonth={baseDate.getMonth()}
               onAssign={handleAssign}
+              onDayTap={handleDayTap}
             />
           ) : tab === "week" ? (
-            <WeekView days={data.days} onAssign={handleAssign} />
+            <WeekView
+              days={data.days}
+              onAssign={handleAssign}
+              onDayTap={handleDayTap}
+            />
           ) : (
             <div className="px-4 space-y-4">
               <div className="bg-white rounded-xl border border-gray-200 p-4">
@@ -123,6 +158,16 @@ export default function Home() {
           )
         )}
       </main>
+
+      {/* 日付詳細モーダル */}
+      {selectedDay && (
+        <DayDetail
+          schedule={selectedDay}
+          onAssign={handleAssign}
+          onClose={() => setSelectedDay(null)}
+          onEventAdded={refetch}
+        />
+      )}
 
       <nav className="sticky bottom-0 bg-white/90 backdrop-blur-md border-t border-gray-100 px-6 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]" aria-label="メインナビゲーション">
         <div className="flex justify-around">
