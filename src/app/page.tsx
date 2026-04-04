@@ -20,7 +20,7 @@ export default function Home() {
   const [tab, setTab] = useState<Tab>("calendar");
   const [selectedDay, setSelectedDay] = useState<DaySchedule | null>(null);
   const view = tab === "week" ? "week" : "month";
-  const { data, loading, error, silentRefetch, optimisticAssign, optimisticToggleWfh } = useSchedule(baseDate, view);
+  const { data, error, silentRefetch, optimisticAssign, optimisticToggleWfh } = useSchedule(baseDate, view);
 
   const navigate = useCallback(
     (direction: -1 | 1) => {
@@ -122,22 +122,18 @@ export default function Home() {
         onTouchStart={(tab === "calendar" || tab === "week") ? swipe.onTouchStart : undefined}
         onTouchEnd={(tab === "calendar" || tab === "week") ? swipe.onTouchEnd : undefined}
       >
-        {(tab === "calendar" || tab === "week") && loading && !data && (
-          <div className="flex justify-center py-12" role="status"><div className="w-6 h-6 border-2 border-blue-300 border-t-blue-600 rounded-full animate-spin" /></div>
-        )}
-
         {(tab === "calendar" || tab === "week") && error && (
           <div className="mx-2 p-4 bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-xl text-sm text-red-600 dark:text-red-400">
             読み込みに失敗しました
-            <button onClick={() => silentRefetch()} className="block mt-2 px-3 py-1.5 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 font-medium rounded-lg">再試行</button>
+            <button onClick={silentRefetch} className="block mt-2 px-3 py-1.5 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 font-medium rounded-lg">再試行</button>
           </div>
         )}
 
-        {tab === "calendar" && data && (
+        {tab === "calendar" && (
           <MonthView days={data.days} currentMonth={baseDate.getMonth()} onAssign={handleAssign} onDayTap={handleDayTap} />
         )}
 
-        {tab === "week" && data && (
+        {tab === "week" && (
           <WeekView days={data.days} onAssign={handleAssign} onDayTap={handleDayTap} />
         )}
 
