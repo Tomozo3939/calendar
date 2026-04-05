@@ -43,68 +43,81 @@ export function MonthView({ days, currentMonth, onDayTap }: MonthViewProps) {
               key={day.date}
               onClick={() => onDayTap(day)}
               className={`
-                p-0.5 border-b border-r border-[var(--color-border)] text-left
+                border-b border-r border-[var(--color-border)] text-left overflow-hidden
                 active:bg-gray-100 dark:active:bg-white/5
                 focus-visible:ring-1 focus-visible:ring-blue-400 focus-visible:outline-none
+                flex flex-col
                 ${!inMonth ? "opacity-20" : ""}
                 ${today ? "bg-blue-50 dark:bg-blue-950" : ""}
               `}
             >
-              {/* 日付(左) + ゴミ(右) */}
-              <div className="flex items-start justify-between mb-0.5">
+              {/* 日付(左上) + ゴミ(右上) */}
+              <div className="flex items-start justify-between px-0.5">
                 <span
                   className={`
-                    text-sm font-semibold pl-0.5
+                    text-[11px] font-semibold leading-tight
                     ${today ? "text-blue-600 dark:text-blue-400" : weekend ? "text-red-400" : "text-[var(--color-text)]"}
                   `}
                 >
                   {date.getDate()}
                 </span>
-                <div className="flex flex-col gap-px items-end">
-                  {day.trash.map((t) => (
-                    <span key={t} className={`text-[7px] font-bold px-0.5 rounded ${getTrashColor(t)}`}>
-                      {getTrashLabel(t)}
-                    </span>
-                  ))}
-                </div>
+                {day.trash.length > 0 && (
+                  <div className="flex gap-px">
+                    {day.trash.map((t) => (
+                      <span key={t} className={`text-[6px] font-bold px-0.5 rounded leading-tight ${getTrashColor(t)}`}>
+                        {getTrashLabel(t)}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
 
-              <div className="space-y-0.5 min-h-[28px]">
-                {/* 保育園休み */}
-                {day.isHoliday && inMonth && day.pickups.length === 0 && (
-                  <div className="text-[8px] text-center text-red-500 dark:text-red-400">
+              {/* コンテンツ */}
+              <div className="flex-1 px-0.5 pb-0.5 space-y-px overflow-hidden">
+                {/* 保育園休み（平日祝日のみ） */}
+                {day.isHoliday && inMonth && (
+                  <div className="text-[7px] bg-red-500 text-white rounded-sm px-0.5 truncate leading-tight">
                     {day.holidayName ?? "休み"}
                   </div>
                 )}
 
-                {/* 送迎: 左=送り 右=迎え */}
+                {/* 送迎: 左=送り 右=迎え（1行） */}
                 {day.pickups.length > 0 && (
-                  <div className="flex gap-px text-[9px] leading-none font-medium">
+                  <div className="flex gap-px text-[7px] leading-tight font-medium">
                     {okuri && (
-                      <span className={`flex-1 text-center rounded-sm py-0.5 ${assigneeColor(okuri.assignee)}`}>
+                      <span className={`flex-1 text-center rounded-sm ${assigneeColor(okuri.assignee)}`}>
                         送{okuri.assignee?.[0] ?? "-"}
                       </span>
                     )}
                     {mukae && (
-                      <span className={`flex-1 text-center rounded-sm py-0.5 ${assigneeColor(mukae.assignee)}`}>
+                      <span className={`flex-1 text-center rounded-sm ${assigneeColor(mukae.assignee)}`}>
                         迎{mukae.assignee?.[0] ?? "-"}
                       </span>
                     )}
                   </div>
                 )}
 
+                {/* 在宅 */}
                 {day.isWfh && (
-                  <div className="text-[8px] bg-green-200 text-green-800 dark:bg-green-900 dark:text-green-300 rounded-sm px-0.5 text-center">在宅</div>
+                  <div className="text-[7px] bg-green-500 text-white rounded-sm px-0.5 truncate leading-tight">在宅</div>
                 )}
 
-                {/* 予定ドット */}
-                {(day.familyEvents.length > 0 || day.kawamuraEvents.filter(e => !e.isWfh).length > 0 || day.moekaEvents.length > 0) && (
-                  <div className="flex gap-0.5 justify-center mt-0.5">
-                    {day.familyEvents.length > 0 && <span className="w-1 h-1 rounded-full bg-red-400" />}
-                    {day.kawamuraEvents.filter(e => !e.isWfh).length > 0 && <span className="w-1 h-1 rounded-full bg-blue-400" />}
-                    {day.moekaEvents.length > 0 && <span className="w-1 h-1 rounded-full bg-pink-400" />}
+                {/* 予定（TimeTreeスタイル：色付きバーでタイトル表示） */}
+                {day.familyEvents.map((ev) => (
+                  <div key={ev.id} className="text-[7px] bg-red-400 text-white rounded-sm px-0.5 truncate leading-tight">
+                    {ev.title}
                   </div>
-                )}
+                ))}
+                {day.kawamuraEvents.filter((e) => !e.isWfh).map((ev) => (
+                  <div key={ev.id} className="text-[7px] bg-blue-400 text-white rounded-sm px-0.5 truncate leading-tight">
+                    {ev.title}
+                  </div>
+                ))}
+                {day.moekaEvents.map((ev) => (
+                  <div key={ev.id} className="text-[7px] bg-pink-400 text-white rounded-sm px-0.5 truncate leading-tight">
+                    {ev.title}
+                  </div>
+                ))}
               </div>
             </button>
           );

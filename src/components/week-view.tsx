@@ -76,19 +76,16 @@ export function WeekView({ days, onAssign, onDayTap }: WeekViewProps) {
                 ))}
               </div>
 
-              {(day.kawamuraEvents.filter((e) => !e.isWfh).length > 0 || day.moekaEvents.length > 0 || day.familyEvents.length > 0) && (
-                <div className="space-y-0.5">
-                  {day.familyEvents.map((ev) => (
-                    <div key={ev.id} className="text-[11px] text-red-600 dark:text-red-400 truncate">{ev.title}</div>
-                  ))}
-                  {day.kawamuraEvents.filter((e) => !e.isWfh).map((ev) => (
-                    <div key={ev.id} className="text-[11px] text-blue-600 dark:text-blue-400 truncate">{ev.title}</div>
-                  ))}
-                  {day.moekaEvents.map((ev) => (
-                    <div key={ev.id} className="text-[11px] text-pink-600 dark:text-pink-400 truncate">{ev.title}</div>
-                  ))}
-                </div>
-              )}
+              {/* 予定（色付きバー） */}
+              {day.familyEvents.map((ev) => (
+                <div key={ev.id} className="text-[11px] bg-red-400 text-white rounded px-1.5 py-0.5 truncate">{ev.startTime ? `${ev.startTime} ` : ""}{ev.title}</div>
+              ))}
+              {day.kawamuraEvents.filter((e) => !e.isWfh).map((ev) => (
+                <div key={ev.id} className="text-[11px] bg-blue-400 text-white rounded px-1.5 py-0.5 truncate">{ev.startTime ? `${ev.startTime} ` : ""}{ev.title}</div>
+              ))}
+              {day.moekaEvents.map((ev) => (
+                <div key={ev.id} className="text-[11px] bg-pink-400 text-white rounded px-1.5 py-0.5 truncate">{ev.startTime ? `${ev.startTime} ` : ""}{ev.title}</div>
+              ))}
             </div>
           </div>
         );
