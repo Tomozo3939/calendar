@@ -73,6 +73,18 @@ export function DayDetail({ schedule, onAssign, onToggleWfh, onClose, onEventAdd
   const mukae = schedule.pickups.find((p) => p.type === "迎え");
   const orderedPickups = [okuri, mukae].filter(Boolean) as PickupEvent[];
 
+  // 全予定をフラット化（表示用）
+  const allEvents = [
+    ...schedule.familyEvents.map((e) => ({ ...e, color: "red" as const, category: "家族" })),
+    ...schedule.kawamuraEvents.filter((e) => !e.isWfh).map((e) => ({ ...e, color: "blue" as const, category: "川村" })),
+    ...schedule.moekaEvents.map((e) => ({ ...e, color: "pink" as const, category: "萌香" })),
+  ];
+
+  const handleDeleteEvent = async (id: string) => {
+    await supabase.from("events").delete().eq("id", id);
+    onEventAdded();
+  };
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-start justify-center pt-16 bg-black/40 dark:bg-black/60 backdrop-blur-sm"
@@ -170,30 +182,12 @@ export function DayDetail({ schedule, onAssign, onToggleWfh, onClose, onEventAdd
           )}
 
           {/* 予定 */}
-          {(schedule.familyEvents.length > 0 || schedule.kawamuraEvents.length > 0 || schedule.moekaEvents.length > 0) && (
+          {allEvents.length > 0 && (
             <section>
               <h4 className="text-xs font-bold text-[var(--color-text-sub)] mb-2">予定</h4>
-              <div className="space-y-1">
-                {schedule.familyEvents.map((ev) => (
-                  <div key={ev.id} className="flex items-center gap-2 py-1.5">
-                    <span className="w-2 h-2 rounded-full shrink-0 bg-red-400" />
-                    <span className="text-sm text-[var(--color-text)]">{ev.title}</span>
-                    {ev.startTime && <span className="text-xs text-[var(--color-text-sub)] ml-auto font-mono">{ev.startTime}</span>}
-                  </div>
-                ))}
-                {schedule.kawamuraEvents.filter((e) => !e.isWfh).map((ev) => (
-                  <div key={ev.id} className="flex items-center gap-2 py-1.5">
-                    <span className="w-2 h-2 rounded-full shrink-0 bg-blue-400" />
-                    <span className="text-sm text-[var(--color-text)]">{ev.title}</span>
-                    {ev.startTime && <span className="text-xs text-[var(--color-text-sub)] ml-auto font-mono">{ev.startTime}</span>}
-                  </div>
-                ))}
-                {schedule.moekaEvents.filter((e) => !e.isWfh).map((ev) => (
-                  <div key={ev.id} className="flex items-center gap-2 py-1.5">
-                    <span className="w-2 h-2 rounded-full shrink-0 bg-pink-400" />
-                    <span className="text-sm text-[var(--color-text)]">{ev.title}</span>
-                    {ev.startTime && <span className="text-xs text-[var(--color-text-sub)] ml-auto font-mono">{ev.startTime}</span>}
-                  </div>
+              <div className="space-y-1.5">
+                {allEvents.map((ev) => (
+                  <EventRow key={ev.id} event={ev} onDelete={handleDeleteEvent} />
                 ))}
               </div>
             </section>
@@ -278,6 +272,54 @@ export function DayDetail({ schedule, onAssign, onToggleWfh, onClose, onEventAdd
           )}
         </div>
       </div>
+    </div>
+  );
+}
+
+function EventRow({
+  event,
+  onDelete,
+}: {
+  event: { id: string; title: string; startTime?: string; color: "red" | "blue" | "pink"; category: string };
+  onDelete: (id: string) => void;
+}) {
+  const [confirming, setConfirming] = useState(false);
+  const dotColor = event.color === "red" ? "bg-red-400" : event.color === "blue" ? "bg-blue-400" : "bg-pink-400";
+
+  return (
+    <div className="flex items-center gap-2 py-1.5 group">
+      <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${dotColor}`} />
+      <div className="flex-1 min-w-0">
+        <span className="text-sm text-[var(--color-text)]">{event.title}</span>
+        <span className="text-[10px] text-[var(--color-text-sub)] ml-1">{event.category}</span>
+      </div>
+      {event.startTime && <span className="text-xs text-[var(--color-text-sub)] font-mono">{event.startTime}</span>}
+      {!confirming ? (
+        <button
+          onClick={() => setConfirming(true)}
+          className="p-1 text-[var(--color-text-sub)] rounded active:bg-gray-200 dark:active:bg-white/10"
+          aria-label="削除"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+            <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      ) : (
+        <div className="flex gap-1">
+          <button
+            onClick={() => onDelete(event.id)}
+            className="px-2 py-0.5 text-[10px] bg-red-500 text-white rounded font-medium"
+          >
+            削除
+          </button>
+          <button
+            onClick={() => setConfirming(false)}
+            className="px-2 py-0.5 text-[10px] bg-[var(--color-border)] text-[var(--color-text-sub)] rounded"
+          >
+            戻す
+          </button>
+        </div>
+      )}
     </div>
   );
 }

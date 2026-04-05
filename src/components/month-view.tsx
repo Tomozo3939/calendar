@@ -55,7 +55,7 @@ export function MonthView({ days, currentMonth, onDayTap }: MonthViewProps) {
               <div className="flex items-start justify-between px-0.5">
                 <span
                   className={`
-                    text-[11px] font-semibold leading-tight
+                    text-xs font-semibold leading-tight
                     ${today ? "text-blue-600 dark:text-blue-400" : weekend ? "text-red-400" : "text-[var(--color-text)]"}
                   `}
                 >
@@ -64,7 +64,7 @@ export function MonthView({ days, currentMonth, onDayTap }: MonthViewProps) {
                 {day.trash.length > 0 && (
                   <div className="flex gap-px">
                     {day.trash.map((t) => (
-                      <span key={t} className={`text-[6px] font-bold px-0.5 rounded leading-tight ${getTrashColor(t)}`}>
+                      <span key={t} className={`text-[8px] font-bold px-0.5 rounded leading-tight ${getTrashColor(t)}`}>
                         {getTrashLabel(t)}
                       </span>
                     ))}
@@ -76,14 +76,14 @@ export function MonthView({ days, currentMonth, onDayTap }: MonthViewProps) {
               <div className="flex-1 px-0.5 pb-0.5 space-y-px overflow-hidden">
                 {/* 保育園休み（平日祝日のみ） */}
                 {day.isHoliday && inMonth && (
-                  <div className="text-[7px] bg-red-500 text-white rounded-sm px-0.5 truncate leading-tight">
+                  <div className="text-[9px] bg-red-500 text-white rounded-sm px-0.5 truncate leading-tight">
                     {day.holidayName ?? "休み"}
                   </div>
                 )}
 
                 {/* 送迎: 左=送り 右=迎え（1行） */}
                 {day.pickups.length > 0 && (
-                  <div className="flex gap-px text-[7px] leading-tight font-medium">
+                  <div className="flex gap-px text-[9px] leading-tight font-medium">
                     {okuri && (
                       <span className={`flex-1 text-center rounded-sm ${assigneeColor(okuri.assignee)}`}>
                         送{okuri.assignee?.[0] ?? "-"}
@@ -99,22 +99,22 @@ export function MonthView({ days, currentMonth, onDayTap }: MonthViewProps) {
 
                 {/* 在宅 */}
                 {day.isWfh && (
-                  <div className="text-[7px] bg-green-500 text-white rounded-sm px-0.5 truncate leading-tight">在宅</div>
+                  <div className="text-[9px] bg-green-500 text-white rounded-sm px-0.5 truncate leading-tight">在宅</div>
                 )}
 
                 {/* 予定（TimeTreeスタイル：色付きバーでタイトル表示） */}
                 {day.familyEvents.map((ev) => (
-                  <div key={ev.id} className="text-[7px] bg-red-400 text-white rounded-sm px-0.5 truncate leading-tight">
+                  <div key={ev.id} className="text-[9px] bg-red-400 text-white rounded-sm px-0.5 truncate leading-tight">
                     {ev.title}
                   </div>
                 ))}
                 {day.kawamuraEvents.filter((e) => !e.isWfh).map((ev) => (
-                  <div key={ev.id} className="text-[7px] bg-blue-400 text-white rounded-sm px-0.5 truncate leading-tight">
+                  <div key={ev.id} className="text-[9px] bg-blue-400 text-white rounded-sm px-0.5 truncate leading-tight">
                     {ev.title}
                   </div>
                 ))}
                 {day.moekaEvents.map((ev) => (
-                  <div key={ev.id} className="text-[7px] bg-pink-400 text-white rounded-sm px-0.5 truncate leading-tight">
+                  <div key={ev.id} className="text-[9px] bg-pink-400 text-white rounded-sm px-0.5 truncate leading-tight">
                     {ev.title}
                   </div>
                 ))}
